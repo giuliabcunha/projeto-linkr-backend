@@ -20,5 +20,9 @@ export async function signIn(req: Request, res: Response) {
     expiresIn: "7d",
   });
 
-  res.send({ token });
+  res.send({
+    user_name: user.name,
+    image_url: user.image_url,
+    token
+  });
 }

@@ -12,6 +12,7 @@ model User {
   name      String
   email     String   @unique
   password  String
+  image_url String?
   createdAt DateTime @default(now())
   Post      Post[]
 }
