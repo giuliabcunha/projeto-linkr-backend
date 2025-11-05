@@ -4,7 +4,7 @@ import { PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient();
 
 export async function signUp(req: Request, res: Response) {
-  const { name, email, password } = req.body;
+  const { name, email, password, image_url } = req.body;
 
   if (!name || !email || !password) return res.status(400).send({message: "Preencha todos os campos."});
 
@@ -14,7 +14,7 @@ export async function signUp(req: Request, res: Response) {
   const hashedPassword = await bcrypt.hash(password, 10);
 
   await prisma.user.create({
-    data: { name, email, password: hashedPassword },
+    data: { name, email, password: hashedPassword, image_url },
   });
 
   res.status(201).send({message: "Usuário criado com sucesso!"});
