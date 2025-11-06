@@ -22,7 +22,7 @@ export async function signIn(req: Request, res: Response) {
 
   res.send({
     user_name: user.name,
-    image_url: user.image_url,
+    ...(user.image_url ? { image_url: user.image_url } : {}),
     token
   });
 }

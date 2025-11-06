@@ -14,7 +14,12 @@ export async function signUp(req: Request, res: Response) {
   const hashedPassword = await bcrypt.hash(password, 10);
 
   await prisma.user.create({
-    data: { name, email, password: hashedPassword, image_url },
+    data: { 
+      name, 
+      email, 
+      password: hashedPassword,
+      ...(image_url ? { image_url } : {})
+    },
   });
 
   res.status(201).send({message: "Usuário criado com sucesso!"});

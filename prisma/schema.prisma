@@ -14,15 +14,32 @@ model User {
   password  String
   image_url String?
   createdAt DateTime @default(now())
-  Post      Post[]
+  posts     Post[]
+
+  followers Follow[] @relation("following")
+  following Follow[] @relation("follows")
 }
 
 model Post {
   id          Int      @id @default(autoincrement())
   userId      Int
   link        String
-  description String? // opcional
+  description String?
   createdAt   DateTime @default(now())
 
   user User @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+}
+
+model Follow {
+  id          Int  @id @default(autoincrement())
+  follower    User @relation("follows", fields: [followerId], references: [id])
+  followerId  Int
+  following   User @relation("following", fields: [followingId], references: [id])
+  followingId Int
+
+  @@unique([followerId, followingId])
+  @@index([followerId])
+  @@index([followingId])
 }
