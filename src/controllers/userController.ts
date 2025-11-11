@@ -20,14 +20,14 @@ export async function getSuggestions(req: Request, res: Response) {
     }
     const top = candidates.slice(0, 5);
 
-    const ids = top.map((u) => u.id);
+    const ids = top.map((u: { id: number; name: string; image_url: string }) => u.id);
     const edges = await prisma.follow.findMany({
       where: { followingId: userId, followerId: { in: ids } },
       select: { followerId: true },
     });
-    const followersSet = new Set(edges.map((e) => e.followerId));
+    const followersSet = new Set(edges.map((e: { followerId: number }) => e.followerId));
 
-    const suggestions = top.map((u) => ({
+    const suggestions = top.map((u: { id: number; name: string; image_url: string }) => ({
       id: u.id,
       name: u.name,
       image_url: u.image_url,
