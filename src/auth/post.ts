@@ -49,3 +49,27 @@ export async function getPosts(req: Request, res: Response) {
     return res.status(500).json({ message: "Erro interno ao buscar posts." });
   }
 }
+
+export async function deletePost(req: Request, res: Response) {
+  try {
+    const userId = res.locals.userId;
+    const postId = Number(req.params.id);
+
+    const post = await prisma.post.findUnique({ where: { id: postId } });
+
+    if (!post) {
+      return res.status(404).json({ message: "Post não encontrado." });
+    }
+
+    if (post.userId !== userId) {
+      return res.status(403).json({ message: "Você não tem permissão para deletar este post." });
+    }
+
+    await prisma.post.delete({ where: { id: postId } });
+
+    return res.status(200).json({ message: "Post deletado com sucesso." });
+  } catch (err) {
+    console.error("Erro ao deletar post:", err);
+    return res.status(500).json({ message: "Erro interno ao deletar post." });
+  }
+}
