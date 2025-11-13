@@ -1,20 +1,21 @@
-import { Request, Response, NextFunction } from "express";
+import type { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 
 export function authMiddleware(req: Request, res: Response, next: NextFunction) {
-  const authHeader = req.headers.authorization;
+  const header = req.headers.authorization ?? "";
+  const [scheme, token] = header.split(" ");
 
-  if (!authHeader?.startsWith("Bearer ")) {
-    return res.status(401).json({ message: "Token não fornecido." });
+  if (!token || scheme !== "Bearer") {
+    return res.status(401).json({ message: "Token ausente." });
   }
 
-  const token = authHeader.split(" ")[1];
-
   try {
-    const secret = process.env.JWT_SECRET!;
-    const payload = jwt.verify(token, secret) as { userId: number };
+    const payload = jwt.verify(token, process.env.JWT_SECRET as string) as { userId: number };
+
+    // agora bate com o signIn
     res.locals.userId = payload.userId;
-    next();
+
+    return next();
   } catch {
     return res.status(401).json({ message: "Token inválido." });
   }

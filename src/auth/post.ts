@@ -5,17 +5,29 @@ const prisma = new PrismaClient();
 
 export async function createPost(req: Request, res: Response) {
   try {
-    const userId = res.locals.userId;
+    const userId = Number(res.locals.userId);
     const { link, description } = req.body;
 
-    if (!link || link.trim() === "") {
+    if (!userId || Number.isNaN(userId)) {
+      return res.status(401).json({ message: "Usuário não autenticado." });
+    }
+
+    const trimmedLink = String(link ?? "").trim();
+
+    if (!trimmedLink) {
       return res.status(400).json({ message: "O campo 'link' é obrigatório." });
+    }
+
+    try {
+      new URL(trimmedLink);
+    } catch {
+      return res.status(400).json({ message: "Link inválido." });
     }
 
     const post = await prisma.post.create({
       data: {
         userId,
-        link: link.trim(),
+        link: trimmedLink,
         description: description?.trim() || null,
       },
     });
@@ -37,7 +49,7 @@ export async function getPosts(req: Request, res: Response) {
           select: {
             id: true,
             name: true,
-            image_url: true
+            image_url: true,
           },
         },
       },
@@ -49,6 +61,59 @@ export async function getPosts(req: Request, res: Response) {
     return res.status(500).json({ message: "Erro interno ao buscar posts." });
   }
 }
+
+export async function updatePost(req: Request, res: Response) {
+  try {
+    const userId = Number(res.locals.userId);
+    const postId = Number(req.params.id);
+    const { link, description } = req.body;
+
+    if (!userId || Number.isNaN(userId)) {
+      return res.status(401).json({ message: "Usuário não autenticado." });
+    }
+
+    if (Number.isNaN(postId)) {
+      return res.status(400).json({ message: "ID inválido." });
+    }
+
+    const trimmedLink = String(link ?? "").trim();
+
+    if (!trimmedLink) {
+      return res.status(400).json({ message: "O campo 'link' é obrigatório." });
+    }
+
+    try {
+      new URL(trimmedLink);
+    } catch {
+      return res.status(400).json({ message: "Link inválido." });
+    }
+
+    const post = await prisma.post.findUnique({ where: { id: postId } });
+
+    if (!post) {
+      return res.status(404).json({ message: "Post não encontrado." });
+    }
+
+    if (post.userId !== userId) {
+      return res.status(403).json({ message: "Você não tem permissão para editar este post." });
+    }
+
+    const updated = await prisma.post.update({
+      where: { id: postId },
+      data: {
+        link: trimmedLink,
+        description: description?.trim() || null,
+      },
+    });
+
+    return res.status(200).json(updated);
+  } catch (err) {
+    console.error("Erro ao atualizar post:", err);
+    return res.status(500).json({ message: "Erro interno ao atualizar post." });
+  }
+}
+
+
 
 export async function deletePost(req: Request, res: Response) {
   try {
@@ -72,4 +137,5 @@ export async function deletePost(req: Request, res: Response) {
     console.error("Erro ao deletar post:", err);
     return res.status(500).json({ message: "Erro interno ao deletar post." });
   }
+}
 }
