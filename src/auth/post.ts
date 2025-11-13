@@ -113,18 +113,12 @@ export async function updatePost(req: Request, res: Response) {
   }
 }
 
+
+
 export async function deletePost(req: Request, res: Response) {
   try {
-    const userId = Number(res.locals.userId);
+    const userId = res.locals.userId;
     const postId = Number(req.params.id);
-
-    if (!userId || Number.isNaN(userId)) {
-      return res.status(401).json({ message: "Usuário não autenticado." });
-    }
-
-    if (Number.isNaN(postId)) {
-      return res.status(400).json({ message: "ID inválido." });
-    }
 
     const post = await prisma.post.findUnique({ where: { id: postId } });
 
@@ -143,4 +137,5 @@ export async function deletePost(req: Request, res: Response) {
     console.error("Erro ao deletar post:", err);
     return res.status(500).json({ message: "Erro interno ao deletar post." });
   }
+}
 }
