@@ -138,4 +138,3 @@ export async function deletePost(req: Request, res: Response) {
     return res.status(500).json({ message: "Erro interno ao deletar post." });
   }
 }
-}
