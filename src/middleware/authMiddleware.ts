@@ -12,7 +12,6 @@ export function authMiddleware(req: Request, res: Response, next: NextFunction) 
   try {
     const payload = jwt.verify(token, process.env.JWT_SECRET as string) as { userId: number };
 
-    // agora bate com o signIn
     res.locals.userId = payload.userId;
 
     return next();

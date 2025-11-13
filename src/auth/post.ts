@@ -113,8 +113,6 @@ export async function updatePost(req: Request, res: Response) {
   }
 }
 
-
-
 export async function deletePost(req: Request, res: Response) {
   try {
     const userId = res.locals.userId;
@@ -136,5 +134,34 @@ export async function deletePost(req: Request, res: Response) {
   } catch (err) {
     console.error("Erro ao deletar post:", err);
     return res.status(500).json({ message: "Erro interno ao deletar post." });
+  }
+}
+
+export async function getMyPosts(req: Request, res: Response) {
+  try {
+    const userId = Number(res.locals.userId);
+
+    if (!userId || Number.isNaN(userId)) {
+      return res.status(401).json({ message: "Usuário não autenticado." });
+    }
+
+    const posts = await prisma.post.findMany({
+      where: { userId },
+      orderBy: { createdAt: "desc" },
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+            image_url: true,
+          },
+        },
+      },
+    });
+
+    return res.status(200).json(posts);
+  } catch (err) {
+    console.error("Erro ao buscar posts do usuário:", err);
+    return res.status(500).json({ message: "Erro interno ao buscar posts do usuário." });
   }
 }
